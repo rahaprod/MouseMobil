@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Extract project archive
-        run: unzip -q MouseMobile-native-no-ip-pin.zip
+        run: unzip -q MouseMobile-native.zip
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -32,7 +32,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Extract project archive
-        run: Expand-Archive -Path MouseMobile-native-no-ip-pin.zip -DestinationPath . -Force
+        run: Expand-Archive -Path MouseMobile-native.zip -DestinationPath . -Force
         shell: pwsh
       - uses: actions/setup-dotnet@v4
         with:
