@@ -22,7 +22,7 @@ jobs:
           gradle-version: "8.7"
 
       - name: Extract project
-        run: unzip -q MouseMobile-project.zip
+        run: unzip -q MouseMobile-landscape.zip
 
       - name: Build APK
         working-directory: MouseMobile
