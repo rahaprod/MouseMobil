@@ -14,6 +14,8 @@ jobs:
         run: git apply MouseMobile-pin-crash-fix.patch
       - name: Apply fullscreen and pinch-zoom improvements
         run: git apply MouseMobile-ui-enhancements.patch
+      - name: Fit full desktop and add pan gesture
+        run: git apply MouseMobile-fit-pan.patch
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -29,23 +31,3 @@ jobs:
         with:
           name: MouseMobile-apk
           path: MouseMobile/app/build/outputs/apk/debug/app-debug.apk
-
-  windows-server:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Extract project archive
-        run: Expand-Archive -Path MouseMobile-native-kop.zip -DestinationPath . -Force
-        shell: pwsh
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-      - name: Publish standalone Windows server
-        run: dotnet publish MouseMobile/pc-server-native/MouseMobileServer.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o MouseMobile-Windows-Server
-      - name: Zip server
-        run: Compress-Archive -Path MouseMobile-Windows-Server/* -DestinationPath MouseMobile-Windows-Server.zip
-        shell: pwsh
-      - uses: actions/upload-artifact@v4
-        with:
-          name: MouseMobile-Windows-Server
-          path: MouseMobile-Windows-Server.zip
