@@ -20,6 +20,8 @@ jobs:
         run: git apply --check MouseMobile-input-quality.patch
       - name: Improve keyboard, clicks, image quality and app styling
         run: git apply MouseMobile-input-quality.patch
+      - name: Add compact navigation, settings and support screens
+        run: base64 -d MouseMobile-app-navigation.patch | gzip -dc | git apply
       - name: Package exact build sources for review
         run: zip -qr MouseMobile-build-source.zip MouseMobile
       - name: Upload build sources
