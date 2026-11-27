@@ -1,14 +1,17 @@
 diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt b/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt
 --- a/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt
 +++ b/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt
-@@ -101,7 +101,10 @@
+@@ -107,7 +107,8 @@
+         if (absolute && f != null) {
              val sx = width.toFloat() / f.width
              val sy = height.toFloat() / f.height
 -            val scale = if (fillScreen) maxOf(sx, sy) else minOf(sx, sy)
-+            // Always fit the complete desktop first. Fullscreen must not crop
-+            // the sides/top of a desktop with a different aspect ratio.
++            // Fit the entire desktop; fullscreen must never crop its edges.
 +            val scale = minOf(sx, sy)
-@@ -211,7 +214,12 @@
+             val w = f.width * scale
+             val h = f.height * scale
+             val l = (width - w) / 2f
+@@ -209,7 +210,13 @@
                      moved = true
                      removeCallbacks(longPress)
                      if (absolute) {
@@ -21,3 +24,5 @@ diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt b/Mo
 +                            sendAbs(e.x, e.y)
 +                        }
                      } else {
+                         accX += (e.x - lastX) * SENS
+                         accY += (e.y - lastY) * SENS
