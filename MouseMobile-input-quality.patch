@@ -107,7 +107,7 @@ index 40abd8a..0354b0a 100644
  
      private val longPress = Runnable {
          if (!moved && !multi) {
-@@ -165,6 +172,14 @@ class TouchView(context: Context, private val absolute: Boolean) : View(context)
+@@ -165,5 +172,13 @@ class TouchView(context: Context, private val absolute: Boolean) : View(context)
                  accS = 0f
                  pinchGesture = false
                  lastPinchDistance = 0f
@@ -121,7 +121,7 @@ index 40abd8a..0354b0a 100644
 +                }
                  if (absolute) sendAbs(e.x, e.y)
                  postDelayed(longPress, LONG_MS)
-@@ -238,7 +253,24 @@ class TouchView(context: Context, private val absolute: Boolean) : View(context)
+@@ -238,6 +253,23 @@ class TouchView(context: Context, private val absolute: Boolean) : View(context)
              MotionEvent.ACTION_UP -> {
                  removeCallbacks(longPress)
                  if (!pinchGesture && !moved && !longDone && e.eventTime - downTime < TAP_MS) {
