@@ -1,7 +1,7 @@
 diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt b/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
 --- a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
 +++ b/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
-@@ -33,13 +33,14 @@
+@@ -33,10 +33,11 @@
  /** Палитра: чистый чёрный (AMOLED) и тёмно-красный. */
  private object Pal {
 -    val BG = Color.BLACK
@@ -20,12 +20,12 @@ diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt b
 +    val TEXT = Color.parseColor("#EBEBEB")
 +    val MUTED = Color.parseColor("#919191")
  }
-@@ -49,6 +49,7 @@
+@@ -49,3 +49,4 @@
      private var held = false
      private var fullscreen = false
      private var fullscreenChrome: List<View> = emptyList()
 +    private var keyboardInput: EditText? = null
-@@ -322,7 +323,15 @@
+@@ -322,5 +323,13 @@
              } else {
                  Net.stopScreen()
              }
@@ -40,7 +40,7 @@ diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt b
 +                }
 +            } else hideKeyboard()
          }
-@@ -347,6 +356,11 @@
+@@ -347,4 +356,9 @@
          screenLayer.addView(zoomButton, FrameLayout.LayoutParams(WRAP, WRAP, android.view.Gravity.TOP or android.view.Gravity.START).apply {
              setMargins(dp(8), dp(8), dp(8), dp(8))
          })
@@ -50,7 +50,7 @@ diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt b
 +            setMargins(dp(8), dp(8), dp(8), dp(12))
 +        })
          body.addView(screenLayer, FrameLayout.LayoutParams(MATCH, MATCH))
-@@ -385,6 +399,7 @@
+@@ -385,4 +399,5 @@
              "Текст для ввода на ПК",
              InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
          )
@@ -59,13 +59,13 @@ diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt b
 diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt b/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt
 --- a/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt
 +++ b/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt
-@@ -1,5 +1,6 @@
+@@ -1,4 +1,5 @@
  package com.mousemobile.app
  
  import android.content.Context
 +import android.os.SystemClock
  import android.graphics.Bitmap
-@@ -68,6 +69,12 @@
+@@ -68,3 +69,9 @@
      private var accX = 0f
      private var accY = 0f
      private var accS = 0f
@@ -75,7 +75,7 @@ diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt b/Mo
 +    private var secondTap = false
 +    private val doubleTapTimeout = ViewConfiguration.getDoubleTapTimeout()
 +    private var pendingSingleTap: Runnable? = null
-@@ -165,6 +172,14 @@
+@@ -165,5 +172,13 @@
                  accS = 0f
                  pinchGesture = false
                  lastPinchDistance = 0f
@@ -118,7 +118,7 @@ diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt b/Mo
 diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/Net.kt b/MouseMobile/app/src/main/java/com/mousemobile/app/Net.kt
 --- a/MouseMobile/app/src/main/java/com/mousemobile/app/Net.kt
 +++ b/MouseMobile/app/src/main/java/com/mousemobile/app/Net.kt
-@@ -127,7 +127,7 @@
+@@ -127,3 +127,3 @@
                      val n = input.readInt()
 -                    if (n <= 0 || n > 8_000_000) throw IOException("плохой кадр")
 +                    if (n <= 0 || n > 32_000_000) throw IOException("плохой кадр")
@@ -126,12 +126,12 @@ diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/Net.kt b/MouseMob
 diff --git a/MouseMobile/pc-server-native/Program.cs b/MouseMobile/pc-server-native/Program.cs
 --- a/MouseMobile/pc-server-native/Program.cs
 +++ b/MouseMobile/pc-server-native/Program.cs
-@@ -14,7 +14,8 @@
+@@ -14,2 +14,3 @@
      private const int CtrlPort = 8765, ScreenPort = 8766, DiscoveryPort = 8767;
 -    private const int Fps = 10, MaxWidth = 1280, JpegQuality = 55;
 +    // Native monitor resolution and high JPEG quality preserve small UI text.
 +    private const int Fps = 10, MaxWidth = 0, JpegQuality = 90;
-@@ -265,6 +266,7 @@
+@@ -265,3 +266,4 @@
      private static Bitmap ScaleIfNeeded(Bitmap source, int maxWidth)
      {
 +        if (maxWidth <= 0) return (Bitmap)source.Clone();
