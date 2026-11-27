@@ -35,8 +35,6 @@ jobs:
       - name: Extract project archive
         run: Expand-Archive -Path MouseMobile-native-kop.zip -DestinationPath . -Force
         shell: pwsh
-      - name: Apply PIN crash fix
-        run: git apply MouseMobile-pin-crash-fix.patch
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
