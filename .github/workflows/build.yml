@@ -25,7 +25,32 @@ jobs:
       - name: Correct fullscreen state and connection wording
         run: git apply MouseMobile-app-corrections.patch
       - name: Add official Telegram channel
-        run: git apply MouseMobile-telegram-channel.patch
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt')
+          s = p.read_text()
+          old = '        content.addView(card("Новости MouseMobile", "Следите за обновлениями и новостями приложения в нашем Telegram-канале. Ссылка на канал будет добавлена."), lp())'
+          new = '''        val telegramCard = card("Новости MouseMobile", "Следите за обновлениями и новостями приложения в нашем Telegram-канале. Нажми, чтобы открыть канал @mousemobileru.").apply {
+              isClickable = true
+              isFocusable = true
+              background = rippled(Pal.CARD)
+              setOnClickListener {
+                  val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/mousemobileru"))
+                  try {
+                      startActivity(intent)
+                  } catch (_: Exception) {
+                      Toast.makeText(this@MainActivity, "Не удалось открыть Telegram-канал", Toast.LENGTH_SHORT).show()
+                  }
+              }
+          }
+          content.addView(telegramCard, lp())'''
+          if s.count(old) != 1:
+              raise SystemExit('Expected one Telegram placeholder; found %d' % s.count(old))
+          p.write_text(s.replace(old, new, 1))
+          PY
+      - name: Verify Telegram channel integration
+        run: grep -q 'https://t.me/mousemobileru' MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
       - name: Package exact build sources for review
         run: zip -qr MouseMobile-build-source.zip MouseMobile
       - name: Upload build sources
