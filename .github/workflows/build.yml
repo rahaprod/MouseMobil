@@ -16,6 +16,13 @@ jobs:
         run: git apply MouseMobile-ui-enhancements.patch
       - name: Fit full desktop and add pan gesture
         run: git apply MouseMobile-fit-pan.patch
+      - name: Package exact build sources for review
+        run: zip -qr MouseMobile-build-source.zip MouseMobile
+      - name: Upload build sources
+        uses: actions/upload-artifact@v4
+        with:
+          name: MouseMobile-build-source
+          path: MouseMobile-build-source.zip
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
