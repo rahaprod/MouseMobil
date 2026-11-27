@@ -1,0 +1,22 @@
+--- a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
++++ b/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
+@@ -713,7 +713,19 @@
+         currentSection = "support"
+         issueAttachments.clear()
+         val content = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+-        content.addView(card("Новости MouseMobile", "Следите за обновлениями и новостями приложения в нашем Telegram-канале. Ссылка на канал будет добавлена."), lp())
++        val telegramCard = card("Новости MouseMobile", "Следите за обновлениями и новостями приложения в нашем Telegram-канале. Нажми, чтобы открыть канал @mousemobileru.").apply {
++            isClickable = true
++            isFocusable = true
++            background = rippled(Pal.CARD)
++            setOnClickListener {
++                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/mousemobileru"))
++                try {
++                    startActivity(intent)
++                } catch (_: Exception) {
++                    Toast.makeText(this@MainActivity, "Не удалось открыть Telegram-канал", Toast.LENGTH_SHORT).show()
++                }
++            }
++        }
++        content.addView(telegramCard, lp())
+         content.addView(label("Частые вопросы", 18f, Pal.TEXT).apply { typeface = Typeface.DEFAULT_BOLD }, lp(18))
