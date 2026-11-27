@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Extract project archive
-        run: unzip -q MouseMobile-native.zip
+        run: unzip -q MouseMobile-native-kop.zip
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -32,7 +32,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Extract project archive
-        run: Expand-Archive -Path MouseMobile-native.zip -DestinationPath . -Force
+        run: Expand-Archive -Path MouseMobile-native-kop.zip -DestinationPath . -Force
         shell: pwsh
       - uses: actions/setup-dotnet@v4
         with:
