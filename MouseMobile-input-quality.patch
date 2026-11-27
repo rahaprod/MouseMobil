@@ -166,3 +166,4 @@ index a4971b3..499008f 100644
 +        if (maxWidth <= 0) return (Bitmap)source.Clone();
          if (source.Width <= maxWidth) return (Bitmap)source.Clone();
          var height = (int)Math.Round(source.Height * (double)maxWidth / source.Width);
+         var result = new Bitmap(maxWidth, height);
