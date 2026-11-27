@@ -159,7 +159,7 @@ index a4971b3..499008f 100644
 +    private const int Fps = 10, MaxWidth = 0, JpegQuality = 90;
      private static readonly object AuthLock = new();
      private static readonly object StateLock = new();
-@@ -264,5 +265,6 @@ internal static class Program
+@@ -264,6 +265,7 @@ internal static class Program
  
      private static Bitmap ScaleIfNeeded(Bitmap source, int maxWidth)
      {
