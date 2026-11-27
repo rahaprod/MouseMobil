@@ -1,4 +1,4 @@
-name: Build MouseMobile
+name: Build MouseMobile # native-quality patch verification
 on:
   push:
   workflow_dispatch:
