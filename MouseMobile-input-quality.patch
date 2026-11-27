@@ -1,7 +1,7 @@
 diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt b/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
 --- a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
 +++ b/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
-@@ -25,7 +25,7 @@ private object Pal {
+@@ -25,8 +25,8 @@ private object Pal {
 -    val BG = Color.BLACK
 -    val CARD = Color.parseColor("#0D0D0D")
 -    val RED = Color.parseColor("#8B0000")
