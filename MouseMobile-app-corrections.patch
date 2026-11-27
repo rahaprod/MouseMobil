@@ -1,45 +1,22 @@
 --- a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
 +++ b/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
-@@ -283,7 +283,7 @@
-             addView(label("MouseMobile", 32f, Pal.RED_HI).apply { typeface = Typeface.DEFAULT_BOLD })
-             addView(label("Управление ПК по Wi-Fi", 14f, Pal.MUTED))
+@@ -285,3 +285,3 @@
              addView(find, lp(32))
 -            addView(label("Телефон и компьютер должны быть в одной Wi-Fi сети. При первой привязке введите одноразовый PIN с экрана ПК. После этого приложение будет подключаться автоматически в течение 7 дней.", 13f, Pal.MUTED), lp(12))
 +            addView(label("Телефон и компьютер должны быть в одной Wi-Fi сети. При первой привязке введите одноразовый PIN с экрана ПК. После этого PIN не понадобится повторно в течение 7 дней — для подключения нажимай эту кнопку ещё раз.", 13f, Pal.MUTED), lp(12))
              addView(status, lp(16))
-         }
-         setContentView(ScrollView(this).apply {
-@@ -296,6 +296,8 @@
-     // ---------- основной экран ----------
- 
+@@ -298,2 +298,4 @@
      private fun showMain(pcName: String, pcIp: String) {
 +        setFullscreen(false)
 +        fullscreenChrome = emptyList()
          inMain = true
-         connectedPcName = pcName
-         connectedPcIp = pcIp
-@@ -585,6 +587,8 @@
-     }
- 
+@@ -587,2 +589,4 @@
      private fun page(title: String, content: LinearLayout): View {
 +        setFullscreen(false)
 +        fullscreenChrome = emptyList()
          val column = LinearLayout(this).apply {
-             orientation = LinearLayout.VERTICAL
-             setBackgroundColor(Pal.BG)
-@@ -634,7 +638,7 @@
-             addView(card("Сохранённый компьютер", if (name.isBlank()) "Пока нет сохранённой привязки." else "$name\n$ip"), lp())
-             addView(label("Сейчас приложение хранит одну активную привязку компьютера. Список нескольких сохранённых ПК пока не поддерживается.", 13f, Pal.MUTED), lp(12))
+@@ -636,3 +640,3 @@
              if (prefs.getString("auth_token", "").orEmpty().isNotBlank()) {
 -                addView(button("Переподключиться", Pal.RED) { showConnect("Найдите сохранённый компьютер в сети") }, lp(14))
 +                addView(button("Найти и подключиться", Pal.RED) { showConnect("Найдите сохранённый компьютер в сети") }, lp(14))
                  addView(button("Удалить привязку", Pal.CARD) {
-                     AlertDialog.Builder(this@MainActivity)
-                         .setTitle("Удалить привязку?")
-                         .setMessage("Токен доступа будет удалён с телефона. Для повторного подключения потребуется PIN с компьютера.")
-                         .setNegativeButton("Отмена", null)
-                         .setPositiveButton("Удалить") { _, _ ->
-                             prefs.edit().remove("auth_token").remove("pc_name").remove("pc_ip").apply()
-                             Net.unpair()
-                             showConnect("Привязка удалена")
-                         }.show()
