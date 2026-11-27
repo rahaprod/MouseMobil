@@ -22,7 +22,7 @@ diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt b
      private var held = false
      private var fullscreen = false
 +    private var keyboardInput: EditText? = null
-@@ -317,5 +319,10 @@ class MainActivity : Activity() {
+@@ -317,5 +319,13 @@ class MainActivity : Activity() {
              } else {
                  Net.stopScreen()
              }
@@ -47,7 +47,7 @@ diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt b
 +            setMargins(dp(8), dp(8), dp(8), dp(12))
 +        })
          body.addView(screenLayer, FrameLayout.LayoutParams(MATCH, MATCH))
-@@ -375,4 +389,5 @@ class MainActivity : Activity() {
+@@ -375,7 +389,8 @@ class MainActivity : Activity() {
      private fun keyboardTab(): View {
          val input = field(
              "Текст для ввода на ПК",
@@ -58,7 +58,7 @@ diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt b
 diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt b/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt
 --- a/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt
 +++ b/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt
-@@ -1,4 +1,5 @@
+@@ -1,3 +1,4 @@
  package com.mousemobile.app
  
 +import android.os.SystemClock
@@ -73,7 +73,7 @@ diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt b/Mo
 +    private var secondTap = false
 +    private val doubleTapTimeout = ViewConfiguration.getDoubleTapTimeout()
 +    private var pendingSingleTap: Runnable? = null
-@@ -135,5 +142,12 @@ class TouchView(context: Context, private val absolute: Boolean) : View(context) {
+@@ -135,5 +142,13 @@ class TouchView(context: Context, private val absolute: Boolean) : View(context) {
                  accX = 0f
                  accY = 0f
                  accS = 0f
@@ -87,7 +87,7 @@ diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt b/Mo
 +                }
                  if (absolute) sendAbs(e.x, e.y)
                  postDelayed(longPress, LONG_MS)
-@@ -224,7 +238,21 @@ class TouchView(context: Context, private val absolute: Boolean) : View(context) {
+@@ -224,8 +238,25 @@ class TouchView(context: Context, private val absolute: Boolean) : View(context) {
              MotionEvent.ACTION_UP -> {
                  removeCallbacks(longPress)
 -                if (!pinchGesture && !moved && !longDone && e.eventTime - downTime < TAP_MS) {
