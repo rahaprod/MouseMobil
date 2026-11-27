@@ -24,6 +24,8 @@ jobs:
         run: base64 -d MouseMobile-app-navigation.patch | gzip -dc | git apply
       - name: Correct fullscreen state and connection wording
         run: git apply MouseMobile-app-corrections.patch
+      - name: Add official Telegram channel
+        run: git apply MouseMobile-telegram-channel.patch
       - name: Package exact build sources for review
         run: zip -qr MouseMobile-build-source.zip MouseMobile
       - name: Upload build sources
