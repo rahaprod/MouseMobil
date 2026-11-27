@@ -16,6 +16,8 @@ jobs:
         run: git apply MouseMobile-ui-enhancements.patch
       - name: Fit full desktop and add pan gesture
         run: git apply MouseMobile-fit-pan.patch
+      - name: Improve keyboard, clicks, image quality and app styling
+        run: git apply MouseMobile-input-quality.patch
       - name: Package exact build sources for review
         run: zip -qr MouseMobile-build-source.zip MouseMobile
       - name: Upload build sources
