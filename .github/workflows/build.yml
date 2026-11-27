@@ -12,6 +12,8 @@ jobs:
         run: unzip -q MouseMobile-native-kop.zip
       - name: Apply PIN crash fix
         run: git apply MouseMobile-pin-crash-fix.patch
+      - name: Apply fullscreen and pinch-zoom improvements
+        run: git apply MouseMobile-ui-enhancements.patch
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
