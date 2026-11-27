@@ -47,7 +47,7 @@ diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt b
 +            setMargins(dp(8), dp(8), dp(8), dp(12))
 +        })
          body.addView(screenLayer, FrameLayout.LayoutParams(MATCH, MATCH))
-@@ -375,7 +389,8 @@ class MainActivity : Activity() {
+@@ -375,6 +389,7 @@ class MainActivity : Activity() {
      private fun keyboardTab(): View {
          val input = field(
              "Текст для ввода на ПК",
@@ -87,7 +87,7 @@ diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt b/Mo
 +                }
                  if (absolute) sendAbs(e.x, e.y)
                  postDelayed(longPress, LONG_MS)
-@@ -224,8 +238,25 @@ class TouchView(context: Context, private val absolute: Boolean) : View(context) {
+@@ -224,7 +238,24 @@ class TouchView(context: Context, private val absolute: Boolean) : View(context) {
              MotionEvent.ACTION_UP -> {
                  removeCallbacks(longPress)
 -                if (!pinchGesture && !moved && !longDone && e.eventTime - downTime < TAP_MS) {
