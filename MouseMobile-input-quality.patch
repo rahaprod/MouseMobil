@@ -1,25 +1,6 @@
 diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt b/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
 --- a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
 +++ b/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
-@@ -33,10 +33,11 @@
- /** Палитра: чистый чёрный (AMOLED) и тёмно-красный. */
- private object Pal {
--    val BG = Color.BLACK
--    val CARD = Color.parseColor("#0D0D0D")
--    val RED = Color.parseColor("#8B0000")
--    val RED_HI = Color.parseColor("#B71C1C")
--    val LINE = Color.parseColor("#3A0000")
--    val TEXT = Color.parseColor("#E6E6E6")
--    val MUTED = Color.parseColor("#8A8A8A")
-+    // Палитра синхронизирована с Windows Server.
-+    val BG = Color.parseColor("#090909")
-+    val CARD = Color.parseColor("#141414")
-+    val RED = Color.parseColor("#B71C1C")
-+    val RED_HI = Color.parseColor("#FF4646")
-+    val LINE = Color.parseColor("#303030")
-+    val TEXT = Color.parseColor("#EBEBEB")
-+    val MUTED = Color.parseColor("#919191")
- }
 @@ -49,3 +49,4 @@
      private var held = false
      private var fullscreen = false
