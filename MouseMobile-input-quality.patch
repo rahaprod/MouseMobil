@@ -150,7 +150,7 @@ diff --git a/MouseMobile/pc-server-native/Program.cs b/MouseMobile/pc-server-nat
 index a4971b3..499008f 100644
 --- a/MouseMobile/pc-server-native/Program.cs
 +++ b/MouseMobile/pc-server-native/Program.cs
-@@ -14,7 +14,8 @@ namespace MouseMobileServer;
+@@ -14,6 +14,7 @@ namespace MouseMobileServer;
  internal static class Program
  {
      private const int CtrlPort = 8765, ScreenPort = 8766, DiscoveryPort = 8767;
