@@ -1,0 +1,198 @@
+diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt b/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
+index ec5c143..c54c9c0 100644
+--- a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
++++ b/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
+@@ -47,6 +47,7 @@ class MainActivity : Activity() {
+     private var inMain = false
+     private var held = false
+     private var fullscreen = false
++    private var fullscreenChrome: List<View> = emptyList()
+ 
+     override fun onCreate(savedInstanceState: Bundle?) {
+         super.onCreate(savedInstanceState)
+@@ -103,6 +104,7 @@ class MainActivity : Activity() {
+         } else {
+             View.SYSTEM_UI_FLAG_VISIBLE
+         }
++        fullscreenChrome.forEach { it.visibility = if (enabled) View.GONE else View.VISIBLE }
+     }
+ 
+     override fun onDestroy() {
+@@ -185,6 +187,7 @@ class MainActivity : Activity() {
+ 
+     private fun showConnect(msg: String = "") {
+         setFullscreen(false)
++        fullscreenChrome = emptyList()
+         inMain = false
+         held = false
+         Net.disconnect()
+@@ -281,6 +284,9 @@ class MainActivity : Activity() {
+             it.text = if (fullscreen) "Выйти из полного экрана" else "Во весь экран"
+             screen.setFillScreen(fullscreen)
+         }.apply { textSize = 13f }
++        val zoomButton = button("⌕ Сброс масштаба", Pal.CARD) {
++            screen.resetZoom()
++        }.apply { textSize = 12f }
+ 
+         val bar = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+         bar.addView(button("ЛКМ") { Net.send("CLICK left") }, weight())
+@@ -338,6 +344,9 @@ class MainActivity : Activity() {
+         screenLayer.addView(fullButton, FrameLayout.LayoutParams(WRAP, WRAP, android.view.Gravity.TOP or android.view.Gravity.END).apply {
+             setMargins(dp(8), dp(8), dp(8), dp(8))
+         })
++        screenLayer.addView(zoomButton, FrameLayout.LayoutParams(WRAP, WRAP, android.view.Gravity.TOP or android.view.Gravity.START).apply {
++            setMargins(dp(8), dp(8), dp(8), dp(8))
++        })
+         body.addView(screenLayer, FrameLayout.LayoutParams(MATCH, MATCH))
+ 
+         val connectionBar = LinearLayout(this).apply {
+@@ -360,6 +369,7 @@ class MainActivity : Activity() {
+             }.apply { textSize = 12f }, LinearLayout.LayoutParams(WRAP, WRAP))
+         }
+ 
++        fullscreenChrome = listOf(connectionBar, tabs, bar)
+         setContentView(LinearLayout(this).apply {
+             orientation = LinearLayout.VERTICAL
+             setBackgroundColor(Pal.BG)
+diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt b/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt
+index 90226db..8e35f98 100644
+--- a/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt
++++ b/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt
+@@ -12,6 +12,7 @@ import android.view.MotionEvent
+ import android.view.View
+ import android.view.ViewConfiguration
+ import kotlin.math.hypot
++import kotlin.math.sqrt
+ 
+ /**
+  * absolute = false: тачпад (относительное движение курсора).
+@@ -24,11 +25,18 @@ class TouchView(context: Context, private val absolute: Boolean) : View(context)
+         const val LONG_MS = 550L
+         const val TAP_MS = 300L
+         const val SCROLL_STEP = 24f
++        const val MIN_ZOOM = 1f
++        const val MAX_ZOOM = 5f
+     }
+ 
+     @Volatile private var frame: Bitmap? = null
+     private val dst = RectF()
+     private var fillScreen = false
++    private var zoom = 1f
++    private var offsetX = 0f
++    private var offsetY = 0f
++    private var lastPinchDistance = 0f
++    private var pinchGesture = false
+     private val slop = ViewConfiguration.get(context).scaledTouchSlop
+ 
+     private val bmpPaint = Paint(Paint.FILTER_BITMAP_FLAG)
+@@ -43,7 +51,7 @@ class TouchView(context: Context, private val absolute: Boolean) : View(context)
+         textSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 15f, resources.displayMetrics)
+     }
+     private val lines: Array<String> = if (absolute) {
+-        arrayOf("Ожидание экрана ПК…", "тап — клик, удержание — ПКМ", "2 пальца — прокрутка")
++        arrayOf("Ожидание экрана ПК…", "тап — клик, удержание — ПКМ", "2 пальца — увеличить / уменьшить")
+     } else {
+         arrayOf("1 палец — курсор", "тап — клик", "2 пальца — прокрутка", "удержание или тап 2 пальцами — ПКМ")
+     }
+@@ -79,6 +87,20 @@ class TouchView(context: Context, private val absolute: Boolean) : View(context)
+         postInvalidate()
+     }
+ 
++    fun resetZoom() {
++        zoom = MIN_ZOOM
++        offsetX = 0f
++        offsetY = 0f
++        postInvalidate()
++    }
++
++    private fun pinchDistance(e: MotionEvent): Float {
++        if (e.pointerCount < 2) return 0f
++        val dx = e.getX(0) - e.getX(1)
++        val dy = e.getY(0) - e.getY(1)
++        return sqrt(dx * dx + dy * dy)
++    }
++
+     override fun onDraw(c: Canvas) {
+         c.drawColor(Color.BLACK)
+         val f = frame
+@@ -90,7 +112,13 @@ class TouchView(context: Context) : View(context)
+             val h = f.height * scale
+             val l = (width - w) / 2f
+             val t = (height - h) / 2f
+-            dst.set(l, t, l + w, t + h)
++            val centerX = width / 2f
++            val centerY = height / 2f
++            val zoomedW = w * zoom
++            val zoomedH = h * zoom
++            val zoomedL = centerX + (l - centerX) * zoom + offsetX
++            val zoomedT = centerY + (t - centerY) * zoom + offsetY
++            dst.set(zoomedL, zoomedT, zoomedL + zoomedW, zoomedT + zoomedH)
+             c.save()
+             c.clipRect(0f, 0f, width.toFloat(), height.toFloat())
+             c.drawBitmap(f, null, dst, bmpPaint)
+@@ -134,17 +162,39 @@ class TouchView(context: Context, private val absolute: Boolean) : View(context)
+                 accX = 0f
+                 accY = 0f
+                 accS = 0f
++                pinchGesture = false
++                lastPinchDistance = 0f
+                 if (absolute) sendAbs(e.x, e.y)
+                 postDelayed(longPress, LONG_MS)
+             }
+             MotionEvent.ACTION_POINTER_DOWN -> {
+                 multi = true
+                 removeCallbacks(longPress)
+-                lastAvgY = avgY(e)
+-                accS = 0f
++                if (absolute) {
++                    pinchGesture = true
++                    lastPinchDistance = pinchDistance(e)
++                } else {
++                    lastAvgY = avgY(e)
++                    accS = 0f
++                }
+             }
+             MotionEvent.ACTION_MOVE -> {
+-                if (e.pointerCount >= 2) {
++                if (absolute && e.pointerCount >= 2) {
++                    val distance = pinchDistance(e)
++                    if (lastPinchDistance > 0f && distance > 0f) {
++                        val requested = distance / lastPinchDistance
++                        val newZoom = (zoom * requested).coerceIn(MIN_ZOOM, MAX_ZOOM)
++                        val factor = newZoom / zoom
++                        val focusX = (e.getX(0) + e.getX(1)) / 2f
++                        val focusY = (e.getY(0) + e.getY(1)) / 2f
++                        offsetX = focusX - (focusX - offsetX) * factor
++                        offsetY = focusY - (focusY - offsetY) * factor
++                        zoom = newZoom
++                        postInvalidateOnAnimation()
++                        moved = true
++                    }
++                    lastPinchDistance = distance
++                } else if (!absolute && e.pointerCount >= 2) {
+                     val y = avgY(e)
+                     accS += y - lastAvgY
+                     lastAvgY = y
+@@ -175,14 +225,19 @@ class TouchView(context: Context, private val absolute: Boolean) : View(context)
+                     lastY = e.y
+                 }
+             }
++            MotionEvent.ACTION_POINTER_UP -> {
++                if (absolute) lastPinchDistance = 0f
++            }
+             MotionEvent.ACTION_UP -> {
+                 removeCallbacks(longPress)
+-                if (!moved && !longDone && e.eventTime - downTime < TAP_MS) {
++                if (!pinchGesture && !moved && !longDone && e.eventTime - downTime < TAP_MS) {
+                     Net.send(if (multi) "CLICK right" else "CLICK left")
+                 }
++                lastPinchDistance = 0f
+             }
+             MotionEvent.ACTION_CANCEL -> {
+                 removeCallbacks(longPress)
++                lastPinchDistance = 0f
+             }
+         }
+         return true
+     }
+}
