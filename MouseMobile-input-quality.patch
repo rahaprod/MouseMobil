@@ -1,7 +1,9 @@
 diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt b/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
 --- a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
 +++ b/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
-@@ -25,8 +25,8 @@ private object Pal {
+@@ -33,13 +33,14 @@
+ /** Палитра: чистый чёрный (AMOLED) и тёмно-красный. */
+ private object Pal {
 -    val BG = Color.BLACK
 -    val CARD = Color.parseColor("#0D0D0D")
 -    val RED = Color.parseColor("#8B0000")
@@ -9,20 +11,21 @@ diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt b
 -    val LINE = Color.parseColor("#3A0000")
 -    val TEXT = Color.parseColor("#E6E6E6")
 -    val MUTED = Color.parseColor("#8A8A8A")
-+    val BG = Color.parseColor("#101216")
-+    val CARD = Color.parseColor("#1A1E24")
-+    val RED = Color.parseColor("#A51D2D")
-+    val RED_HI = Color.parseColor("#E14B5A")
-+    val LINE = Color.parseColor("#343B45")
-+    val TEXT = Color.parseColor("#F1F3F5")
-+    val MUTED = Color.parseColor("#A1AAB5")
++    // Палитра синхронизирована с Windows Server.
++    val BG = Color.parseColor("#090909")
++    val CARD = Color.parseColor("#141414")
++    val RED = Color.parseColor("#B71C1C")
++    val RED_HI = Color.parseColor("#FF4646")
++    val LINE = Color.parseColor("#303030")
++    val TEXT = Color.parseColor("#EBEBEB")
++    val MUTED = Color.parseColor("#919191")
  }
-@@ -49,3 +49,4 @@ class MainActivity : Activity() {
-     private var inMain = false
+@@ -49,6 +49,7 @@
      private var held = false
      private var fullscreen = false
+     private var fullscreenChrome: List<View> = emptyList()
 +    private var keyboardInput: EditText? = null
-@@ -317,5 +319,13 @@ class MainActivity : Activity() {
+@@ -322,7 +323,15 @@
              } else {
                  Net.stopScreen()
              }
@@ -37,8 +40,8 @@ diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt b
 +                }
 +            } else hideKeyboard()
          }
-@@ -341,4 +350,9 @@ class MainActivity : Activity() {
-         screenLayer.addView(fullButton, FrameLayout.LayoutParams(WRAP, WRAP, android.view.Gravity.TOP or android.view.Gravity.END).apply {
+@@ -347,6 +356,11 @@
+         screenLayer.addView(zoomButton, FrameLayout.LayoutParams(WRAP, WRAP, android.view.Gravity.TOP or android.view.Gravity.START).apply {
              setMargins(dp(8), dp(8), dp(8), dp(8))
          })
 +        screenLayer.addView(button("⌨ Клавиатура", Pal.CARD) { showTab(1) }.apply {
@@ -47,9 +50,7 @@ diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt b
 +            setMargins(dp(8), dp(8), dp(8), dp(12))
 +        })
          body.addView(screenLayer, FrameLayout.LayoutParams(MATCH, MATCH))
-@@ -375,6 +389,7 @@ class MainActivity : Activity() {
-     private fun keyboardTab(): View {
-         val input = field(
+@@ -385,6 +399,7 @@
              "Текст для ввода на ПК",
              InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
          )
@@ -58,12 +59,13 @@ diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt b
 diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt b/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt
 --- a/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt
 +++ b/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt
-@@ -1,3 +1,4 @@
+@@ -1,5 +1,6 @@
  package com.mousemobile.app
  
-+import android.os.SystemClock
  import android.content.Context
-@@ -58,3 +59,9 @@ class TouchView(context: Context, private val absolute: Boolean) : View(context) {
++import android.os.SystemClock
+ import android.graphics.Bitmap
+@@ -68,6 +69,12 @@
      private var accX = 0f
      private var accY = 0f
      private var accS = 0f
@@ -73,10 +75,10 @@ diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt b/Mo
 +    private var secondTap = false
 +    private val doubleTapTimeout = ViewConfiguration.getDoubleTapTimeout()
 +    private var pendingSingleTap: Runnable? = null
-@@ -135,5 +142,13 @@ class TouchView(context: Context, private val absolute: Boolean) : View(context) {
-                 accX = 0f
-                 accY = 0f
+@@ -165,6 +172,14 @@
                  accS = 0f
+                 pinchGesture = false
+                 lastPinchDistance = 0f
 +                val now = SystemClock.uptimeMillis()
 +                secondTap = lastTapTime > 0L &&
 +                    now - lastTapTime <= doubleTapTimeout &&
@@ -87,12 +89,11 @@ diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt b/Mo
 +                }
                  if (absolute) sendAbs(e.x, e.y)
                  postDelayed(longPress, LONG_MS)
-@@ -224,7 +238,24 @@ class TouchView(context: Context, private val absolute: Boolean) : View(context) {
+@@ -238,7 +253,24 @@
              MotionEvent.ACTION_UP -> {
                  removeCallbacks(longPress)
--                if (!pinchGesture && !moved && !longDone && e.eventTime - downTime < TAP_MS) {
+                 if (!pinchGesture && !moved && !longDone && e.eventTime - downTime < TAP_MS) {
 -                    Net.send(if (multi) "CLICK right" else "CLICK left")
-+                if (!pinchGesture && !moved && !longDone && e.eventTime - downTime < TAP_MS) {
 +                    if (multi) {
 +                        Net.send("CLICK right")
 +                    } else if (secondTap) {
@@ -117,17 +118,20 @@ diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/TouchView.kt b/Mo
 diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/Net.kt b/MouseMobile/app/src/main/java/com/mousemobile/app/Net.kt
 --- a/MouseMobile/app/src/main/java/com/mousemobile/app/Net.kt
 +++ b/MouseMobile/app/src/main/java/com/mousemobile/app/Net.kt
-@@ -104,1 +104,1 @@ object Net {
+@@ -127,7 +127,7 @@
+                     val n = input.readInt()
 -                    if (n <= 0 || n > 8_000_000) throw IOException("плохой кадр")
 +                    if (n <= 0 || n > 32_000_000) throw IOException("плохой кадр")
+                     val buf = ByteArray(n)
 diff --git a/MouseMobile/pc-server-native/Program.cs b/MouseMobile/pc-server-native/Program.cs
 --- a/MouseMobile/pc-server-native/Program.cs
 +++ b/MouseMobile/pc-server-native/Program.cs
-@@ -14,1 +14,2 @@ internal static class Program
+@@ -14,7 +14,8 @@
+     private const int CtrlPort = 8765, ScreenPort = 8766, DiscoveryPort = 8767;
 -    private const int Fps = 10, MaxWidth = 1280, JpegQuality = 55;
-+    // Keep the monitor's native resolution; high JPEG quality preserves small UI text.
++    // Native monitor resolution and high JPEG quality preserve small UI text.
 +    private const int Fps = 10, MaxWidth = 0, JpegQuality = 90;
-@@ -265,3 +265,4 @@ internal static class Program
+@@ -265,6 +266,7 @@
      private static Bitmap ScaleIfNeeded(Bitmap source, int maxWidth)
      {
 +        if (maxWidth <= 0) return (Bitmap)source.Clone();
