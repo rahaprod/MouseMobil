@@ -1,6 +1,6 @@
 --- a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
 +++ b/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
-@@ -713,7 +713,19 @@
+@@ -712,7 +712,20 @@
          currentSection = "support"
          issueAttachments.clear()
          val content = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
