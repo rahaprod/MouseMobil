@@ -1,15 +1,11 @@
 diff --git a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt b/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
 --- a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
 +++ b/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
-@@ -328,13 +328,14 @@
- 
+@@ -333,9 +333,9 @@
          val body = FrameLayout(this)
--        for (v in views) body.addView(v, FrameLayout.LayoutParams(MATCH, MATCH))
-+        // Keep the screen view attached only to screenLayer. Adding it to body
-+        // first and then to screenLayer throws IllegalStateException after PIN pairing.
-+        body.addView(pad, FrameLayout.LayoutParams(MATCH, MATCH))
-+        body.addView(keys, FrameLayout.LayoutParams(MATCH, MATCH))
+         for (v in views) body.addView(v, FrameLayout.LayoutParams(MATCH, MATCH))
          val screenLayer = FrameLayout(this)
++        body.removeView(screen)
          screenLayer.addView(screen, FrameLayout.LayoutParams(MATCH, MATCH))
          screenLayer.addView(fullButton, FrameLayout.LayoutParams(WRAP, WRAP, android.view.Gravity.TOP or android.view.Gravity.END).apply {
              setMargins(dp(8), dp(8), dp(8), dp(8))
