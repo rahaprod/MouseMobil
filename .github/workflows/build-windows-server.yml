@@ -1,0 +1,44 @@
+name: Build MouseMobile Windows Server
+
+on:
+  push:
+    branches:
+      - fix/pin-crash
+    paths:
+      - '.github/workflows/build-windows-server.yml'
+      - 'BUILD_WINDOWS_SERVER.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-server:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Extract MouseMobile source
+        shell: pwsh
+        run: Expand-Archive -Path MouseMobile-native-kop.zip -DestinationPath . -Force
+
+      - name: Publish standalone Windows x64 server
+        run: dotnet publish MouseMobile/pc-server-native/MouseMobileServer.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o MouseMobile-Windows-Server
+
+      - name: Package server
+        shell: pwsh
+        run: Compress-Archive -Path MouseMobile-Windows-Server/* -DestinationPath MouseMobile-Windows-Server.zip -Force
+
+      - name: Upload Windows server
+        uses: actions/upload-artifact@v4
+        with:
+          name: MouseMobile-Windows-Server
+          path: MouseMobile-Windows-Server.zip
+          if-no-files-found: error
+          retention-days: 90
