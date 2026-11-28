@@ -1,0 +1,1 @@
+Trigger standalone Windows x64 server build via GitHub Actions.
