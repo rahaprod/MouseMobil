@@ -24,6 +24,8 @@ jobs:
         run: base64 -d MouseMobile-app-navigation.patch | gzip -dc | git apply
       - name: Correct fullscreen state and connection wording
         run: git apply MouseMobile-app-corrections.patch
+      - name: Show navigation before PC connection
+        run: git apply MouseMobile-preconnect-navigation.patch
       - name: Add official Telegram channel
         run: |
           python3 - <<'PY'
@@ -51,6 +53,11 @@ jobs:
           PY
       - name: Verify Telegram channel integration
         run: grep -q 'https://t.me/mousemobileru' MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
+      - name: Verify pre-connection navigation
+        run: |
+          grep -q 'showHome()' MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
+          grep -q '○ Не подключено' MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
+          grep -q 'setContentView(page("Подключение", col))' MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
       - name: Package exact build sources for review
         run: zip -qr MouseMobile-build-source.zip MouseMobile
       - name: Upload build sources
