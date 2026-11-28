@@ -1,0 +1,147 @@
+--- a/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
++++ b/MouseMobile/app/src/main/java/com/mousemobile/app/MainActivity.kt
+@@ -52,6 +52,7 @@
+ class MainActivity : Activity() {
+ 
+     private var inMain = false
++    private var isConnected = false
+     private var held = false
+     private var fullscreen = false
+     private var fullscreenChrome: List<View> = emptyList()
+@@ -72,10 +73,11 @@
+         applyTheme(selectedTheme)
+         Net.onLost = {
+             runOnUiThread {
+-                if (inMain) showConnect("Соединение потеряно")
++                if (isConnected) showConnect("Соединение потеряно")
+             }
+         }
+-        showSplash()
++        // Сразу открываем основной интерфейс с боковым меню. Подключение — отдельный раздел.
++        showHome()
+     }
+ 
+     private fun showSplash() {
+@@ -134,9 +136,7 @@
+ 
+     @Deprecated("Deprecated in Java")
+     override fun onBackPressed() {
+-        if (inMain) {
+-            if (currentSection == "home") showConnect() else showHome()
+-        } else super.onBackPressed()
++        if (inMain && currentSection != "home") showHome() else super.onBackPressed()
+     }
+ 
+     // ---------- помощники оформления ----------
+@@ -208,7 +208,9 @@
+     private fun showConnect(msg: String = "") {
+         setFullscreen(false)
+         fullscreenChrome = emptyList()
+-        inMain = false
++        inMain = true
++        isConnected = false
++        currentSection = "connect"
+         held = false
+         Net.disconnect()
+         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+@@ -240,6 +242,7 @@
+                                         prefs.edit().putString("pc_name", found.name).putString("pc_ip", found.ip).apply()
+                                         connectedPcName = found.name
+                                         connectedPcIp = found.ip
++                                        isConnected = true
+                                         showHome()
+                                     } else {
+                                         prefs.edit().remove("auth_token").apply()
+@@ -264,8 +267,9 @@
+                                             if (err == null && !token.isNullOrBlank()) {
+                                                 prefs.edit().putString("auth_token", token).putString("pc_name", found.name).putString("pc_ip", found.ip).apply()
+                                                 connectedPcName = found.name
+-                                        connectedPcIp = found.ip
+-                                        showHome()
++                                                connectedPcIp = found.ip
++                                                isConnected = true
++                                                showHome()
+                                             } else status.text = err ?: "Не удалось сохранить привязку"
+                                         }
+                                     }.start()
+@@ -279,23 +283,21 @@
+         val col = LinearLayout(this).apply {
+             orientation = LinearLayout.VERTICAL
+             setBackgroundColor(Pal.BG)
+-            setPadding(dp(24), dp(48), dp(24), dp(24))
+-            addView(label("MouseMobile", 32f, Pal.RED_HI).apply { typeface = Typeface.DEFAULT_BOLD })
+-            addView(label("Управление ПК по Wi-Fi", 14f, Pal.MUTED))
+-            addView(find, lp(32))
+-            addView(label("Телефон и компьютер должны быть в одной Wi-Fi сети. При первой привязке введите одноразовый PIN с экрана ПК. После этого PIN не понадобится повторно в течение 7 дней — для подключения нажимай эту кнопку ещё раз.", 13f, Pal.MUTED), lp(12))
++            addView(card("Подключение к компьютеру", "Телефон и ПК должны находиться в одной Wi-Fi сети."), lp())
++            addView(find, lp(16))
++            addView(label("При первой привязке введи одноразовый PIN с экрана ПК. После привязки PIN повторно не понадобится в течение 7 дней.", 13f, Pal.MUTED), lp(12))
+             addView(status, lp(16))
+         }
+-        setContentView(ScrollView(this).apply {
+-            setBackgroundColor(Pal.BG)
+-            isFillViewport = true
+-            addView(col)
+-        })
++        setContentView(page("Подключение", col))
+     }
+ 
+     // ---------- основной экран ----------
+ 
+     private fun showMain(pcName: String, pcIp: String) {
++        if (!isConnected) {
++            showConnect("Сначала подключись к компьютеру")
++            return
++        }
+         setFullscreen(false)
+         fullscreenChrome = emptyList()
+         inMain = true
+@@ -479,6 +481,7 @@
+             "settings" -> showSettings()
+             "instructions" -> showInstructionsPage()
+             "support" -> showSupport()
++            "connect" -> showConnect()
+             "vpn" -> showComingSoon("VPN")
+             else -> showComingSoon("Передача файлов")
+         }
+@@ -534,7 +537,7 @@
+                 closeDrawer(root)
+                 when (key) {
+                     "home" -> showHome()
+-                    "management" -> showMain(connectedPcName, connectedPcIp)
++                    "management" -> if (isConnected) showMain(connectedPcName, connectedPcIp) else showConnect("Сначала подключись к компьютеру")
+                     "pcs" -> showMyPcs()
+                     "settings" -> showSettings()
+                     "instructions" -> showInstructionsPage()
+@@ -613,17 +616,24 @@
+     private fun showHome() {
+         inMain = true
+         currentSection = "home"
+-        if (keepScreenOn) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
++        if (keepScreenOn && isConnected) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+         else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
++        val connected = isConnected
+         val content = LinearLayout(this).apply {
+             orientation = LinearLayout.VERTICAL
+-            addView(card("Состояние подключения", "● Подключено к компьютеру").apply {
+-                addView(label(connectedPcName, 18f, Pal.RED_HI).apply { typeface = Typeface.DEFAULT_BOLD }, lp(8))
+-                addView(label(connectedPcIp, 13f, Pal.MUTED), lp(2))
++            addView(card("Состояние подключения", if (connected) "● Подключено к компьютеру" else "○ Не подключено" ).apply {
++                if (connected) {
++                    addView(label(connectedPcName, 18f, Pal.RED_HI).apply { typeface = Typeface.DEFAULT_BOLD }, lp(8))
++                    addView(label(connectedPcIp, 13f, Pal.MUTED), lp(2))
++                } else {
++                    addView(label("Подключи компьютер, чтобы начать управление.", 13f, Pal.MUTED), lp(8))
++                }
+             }, lp())
+-            addView(button("Открыть управление", Pal.RED) { showMain(connectedPcName, connectedPcIp) }, lp(14))
+-            addView(card("Быстрый доступ", "Управляйте курсором, вводите текст с телефона и просматривайте экран компьютера."), lp(14))
+-            addView(card("Подсказка", "Телефон и компьютер должны находиться в одной локальной Wi-Fi сети. Не открывайте порт сервера в интернет."), lp(14))
++            addView(button(if (connected) "Открыть управление" else "Подключиться к ПК", Pal.RED) {
++                if (connected) showMain(connectedPcName, connectedPcIp) else showConnect()
++            }, lp(14))
++            addView(card("Быстрый доступ", if (connected) "Управляй курсором, вводи текст с телефона и просматривай экран компьютера." else "После подключения станут доступны тачпад, клавиатура и трансляция экрана ПК."), lp(14))
++            addView(card("Подсказка", "Телефон и компьютер должны находиться в одной локальной Wi-Fi сети. Не открывай порт сервера в интернет."), lp(14))
+         }
+         setContentView(page("Главная", content))
+     }
